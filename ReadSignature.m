@@ -33,20 +33,67 @@ function [X Y TStamp Pressure EndPts]=ReadSignature(FileName,ShowSig)
             EndPts=SigData(5+i);
             
             Xi = [X(1)];
+            Yi = [Y(1)];
             for i = 1 : (length(X) - 1)
+                a = (Y(i) - Y(i+1)) / (X(i) - X(i+1));
+                b = (Y(i)*X(i+1) - X(i)*Y(i+1)) / (X(i+1) - X(i));
                 
+                if TStamp(i+1) - TStamp(i) > TStamp(2) - TStamp(1)
+                    continue
+                end
+                                
                 if X(i) > X(i+1)
                     for xn = X(i) : -1 : X(i+1)
                         Xi = [Xi; xn];
+                        Yi = [Yi; a*xn+b];
                     end
                 else
                     for xn = X(i) : X(i+1)
                         Xi = [Xi; xn];
+                        Yi = [Yi; a*xn+b];
                     end
                 end                    
                 
             end
-            Xi
+            
+           DrawPlot(Xi, 'X', -Yi, 'Y', EndPts);
+           
+           Xmaxes = [];
+           Ymaxes = [];
+           Xmins = [];
+           Ymins = [];
+           for i = min(Xi) : max(Xi)
+               
+%                indexes = Xi==Xi(i);
+               indexes =  Xi==i;
+               colX = Xi(indexes);
+               colY = Yi(indexes);
+               
+               maxx = max(colY);
+               minn = min(colY);
+               
+               Xmaxes = [Xmaxes; i];
+               Ymaxes = [Ymaxes; maxx];
+               Xmins = [Xmins; i];
+               Ymins = [Ymins; minn];
+               
+           end
+           
+           area = 0;
+           for i = min(Xmins) : max(Xmins)
+               if Xmins(i)==nan
+                   continue
+               end
+               index = find(Xmaxes==Xmins(i))
+               if index
+                   area = area + (Ymaxes(index) - Ymins(i));
+                   
+               end
+               
+           end
+           
+           DrawPlot(Xmaxes, 'X', -Ymaxes, 'Y', EndPts);
+           DrawPlot(Xmins, 'X', -Ymins, 'Y', EndPts);
             
             %derivatives
             TSteps = diff(TStamp);
@@ -139,7 +186,7 @@ function [X Y TStamp Pressure EndPts]=ReadSignature(FileName,ShowSig)
                 disp( strcat('curvature: ', num2str(curvature)) )
                 
 %                 Average Curvature per Stroke
-                ups = strfind( TSteps' > TSteps(1), 1 );
+                ups = [strfind( TSteps' > TSteps(1), 1 ); 1]
                 curvSum = sum( pitZ( X(1:ups(1)), Y(1:ups(1)) ) ) / (max(Y(1:ups(1))) - min(Y(1:ups(1))));
                 
                 for i = 1 : ( length(ups) )
