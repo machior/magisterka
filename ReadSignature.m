@@ -1,58 +1,32 @@
-%This function is provided as it is, without any warranty.
-%   Parameters:
-%   FileName: file name of the signature.
-%   ShowSig : if set to non 0 value displays signature.
-
-%   Output:
-%   X           : x coordinates
-%   Y           : y coordinates
-%   TStamps     : point acquisition time in msec (relative to 1'st point) 
-%   Pressure    : self explanatory
-%   EndPts      : 1 indicates end of a signature segment, 0 other wise
-
 function ReadSignature(FileName,ShowSig)
 
-    [X Y TStamp Pressure EndPts]=GetParameters(FileName);
-            
+    [X Y TStamp Pressure EndPts] = GetParameters(FileName);
+    
     [Xmaxes, Ymaxes, Xmins, Ymins] = calculateExtremes(X, Y, TStamp, EndPts);
     [Xmeans, Ymeans, fullArea] = calculateMeans(Xmins, Ymins, Xmaxes, Ymaxes);
 
     disp( strcat('Center X: ', num2str(mean(Xmeans)), ' Y: ', num2str(mean(Ymeans))) )
 
-    DrawPlot(Xmaxes, 'X', -Ymaxes, 'Y', EndPts);
-    DrawPlot(Xmins, 'X', -Ymins, 'Y', EndPts);
+%     DrawPlot(Xmaxes, 'X', -Ymaxes, 'Y', EndPts);
+%     DrawPlot(Xmins, 'X', -Ymins, 'Y', EndPts);
 
     %derivatives
     TSteps = diff(TStamp);
     V_X = diff(X)./TSteps;
-    V_Y = diff(Y)./TSteps;
-    V_P = diff(Pressure)./TSteps;
-
-    A_X = diff(V_X)./TSteps(2:end);
-    A_Y = diff(V_Y)./TSteps(2:end);
-    A_P = diff(V_P)./TSteps(2:end);
 
     %additional
-    Distance = sqrt( X.^2 + Y.^2 );
     Slant = ( diff(Y) ./ diff(X) );
     Slant(find(isnan(Slant))) = [];
     Slant = radtodeg( atan(Slant) );
-%             diff( Y(isnan(Slant)))
-%             diff( X(isnan(Slant)))
-%             diff( Y(isnan(Slant))) ./ diff(X(isnan(Slant)))
-%             Slant(isnan(Slant))
+    
     PathTraveled = cumsum( sqrt( diff(X).^2 + diff(Y).^2 ) );
     PathTraveled = [0; PathTraveled];
     PenVelocity = diff(PathTraveled)./TSteps;
     PenAcceleration = diff(PenVelocity)./TSteps(2:end);
-    Velocity = sqrt( V_X.^2 + V_Y.^2 );
-%             Acceleration = sqrt( A_X.^2 + A_Y.^2 );
-%             A_X(1:10)
-%             A_Y(1:10)
-
+    
     if ShowSig
 
-        DrawPlot(X, 'X', -Y, 'Y', EndPts);
+%         DrawPlot(X, 'X', -Y, 'Y', EndPts);
 %                DrawPlot(TStamp, 't', X, 'X', EndPts);
 %                DrawPlot(TStamp, 't', Y, 'Y', EndPts);
 %                DrawPlot(TStamp(2:end), 't', V_X, 'V_X', EndPts);
@@ -70,10 +44,7 @@ function ReadSignature(FileName,ShowSig)
 %                DrawPlot(TStamp(2:end), 't', V_P, 'V_P', EndPts);
 %                figure, plot(TStamp);
 
-        TSteps = diff(TStamp);
-
 %                 signature duration
-%                 disp(TStamp(end))
         disp( strcat('time: ', num2str(TStamp(end)), ' ms') )
 
 %                 pen-down ratio
@@ -91,10 +62,7 @@ function ReadSignature(FileName,ShowSig)
 
 %                 pen-ups
         penUps = sum(TSteps > TSteps(1)) + 1;
-%                 disp(sum(TSteps > TSteps(1)))
         disp(strcat('number of pen-ups: ', num2str( sum( penUps ) )))
-
-%                 cursivity
 
 %                 cursiviness
         disp(strcat('cursiviness: ', num2str( hLength / penUps )))
@@ -108,67 +76,20 @@ function ReadSignature(FileName,ShowSig)
         disp( strcat('top heaviness: ', num2str(horDisp)) )
 
 %                 Curvature
-%                 curvature = sum( sqrt(diff(X).^2 + diff(Y).^2) ) / hLength;
         curvature = sum( pitZ(X, Y) ) / hLength;
         disp( strcat('curvature: ', num2str(curvature)) )
-
-%                 Average Curvature per Stroke
-%         ups = [strfind( TSteps' > TSteps(1), 1 ); 1];
-%         curvSum = sum( pitZ( X(1:ups(1)), Y(1:ups(1)) ) ) / (max(Y(1:ups(1))) - min(Y(1:ups(1))));
-% 
-%         for i = 1 : ( length(ups) )
-% 
-%             if i ~= length(ups)
-% %                         disp( TStamp(ups(i)+1 : ups(i+1)) )
-%                 curvSum = curvSum + sum( pitZ( X(ups(i)+1 : ups(i+1)), Y(ups(i)+1 : ups(i+1)) ) ) / (max(Y(ups(i)+1 : ups(i+1))) - min(Y(ups(i)+1 : ups(i+1))));
-%             else
-% %                         disp( TStamp(ups(i)+1 : end) )
-%                 curvSum = curvSum + sum( sqrt(diff( X(ups(i)+1 : end) ).^2 + diff( Y(ups(i)+1 : end) ).^2) ) / (max(Y(ups(i)+1 : end)) - min(Y(ups(i)+1 : end)));
-%                 curvSum = curvSum + sum( pitZ( X(ups(i)+1 : end), Y(ups(i)+1 : end ) ) ) / (max(Y(ups(i)+1 : end)) - min(Y(ups(i)+1 : end)));
-%             end
-% 
-%         end
-% 
-%         disp( strcat('average curvature per stroke: ', num2str( curvSum / (length(ups)+1) )) )
-
-%                 Number of strokes
-                % Construct blurring window.
-        windowWidth = int16(5);
-        halfWidth = windowWidth / 2
-        gaussFilter = gausswin(5)
-        gaussFilter = gaussFilter / sum(gaussFilter); % Normalize.
-
-        % Do the blur.
-        smoothedVector = conv(X, gaussFilter);
-        smoothedVector = smoothedVector(halfWidth:end-halfWidth+1);
-        a = ( smoothedVector(halfWidth) - X(1) ) / ( halfWidth - 1 );
-        b = X(1) - a;
-        for i=1:halfWidth
-            smoothedVector(i)=a*i+b;
-        end
-        a = ( X(end) - smoothedVector(end-halfWidth) ) / ( halfWidth );
-        b = X(end) - a*length(X);
-        for i=(length(smoothedVector)-halfWidth):length(smoothedVector)
-            smoothedVector(i)=a*i+b;
-        end
-
-        [locMaxes, locMaxesInd] = findpeaks(smoothedVector);
-        [locMins, locMinsInd] = findpeaks(-smoothedVector);
+        smoothedX = smoothenPlot(X, 5);
         
-        [locExtr, locExtrInd] = getExtremes(X);
+        [locExtr, locExtrInd] = getExtremes(smoothedX);
         
         % plot it.
         figure;
         plot(X);
         hold on;
-        plot(smoothedVector);
+        plot(smoothedX);
         plot(locExtrInd, locExtr, 'o');
+        xlswrite('pps.xls',smoothedX);
         
-        
-%                 Mean Ascender Height:
-%                 Mean Descender Depth:
-%                 Maximum height
-
 %                 Maximum velocity
         disp( strcat('Maximum velocity: ', num2str( max(PenVelocity) )) )
 
@@ -228,12 +149,12 @@ function ReadSignature(FileName,ShowSig)
 
 end
 
-function [locExtr, locExtrInd] = getExtremes(X)
+function smoothedVector = smoothenPlot(X, windowSize)
 
-    % Construct blurring window.
-    windowWidth = int16(5);
-    halfWidth = windowWidth / 2
-    gaussFilter = gausswin(5)
+       % Construct blurring window.
+    windowWidth = int16(windowSize);
+    halfWidth = windowWidth / 2;
+    gaussFilter = gausswin(5);
     gaussFilter = gaussFilter / sum(gaussFilter); % Normalize.
 
     % Do the blur.
@@ -249,11 +170,40 @@ function [locExtr, locExtrInd] = getExtremes(X)
     for i=(length(smoothedVector)-halfWidth):length(smoothedVector)
         smoothedVector(i)=a*i+b;
     end
+        
+end
 
-    [locMaxes, locMaxesInd] = findpeaks(smoothedVector);
-    [locMins, locMinsInd] = findpeaks(-smoothedVector);
+function [locExtr, locExtrInd] = getExtremes(X)
+
+    [locMaxes, locMaxesInd] = findpeaks(X);
+    [locMins, locMinsInd] = findpeaks(-X);
     locExtr = [locMaxes; -locMins];
     locExtrInd = [locMaxesInd; locMinsInd];
+    
+    n = length(locExtr);
+    while (n > 0)
+        % Iterate through x
+        nnew = 0;
+        for i = 2:n
+            % Swap elements in wrong order
+            if (locExtr(i) < locExtr(i - 1))
+                locExtr = swap(locExtr,i,i - 1);
+                locExtrInd = swap(locExtrInd,i,i - 1);
+                nnew = i;
+            end
+        end
+        n = nnew;
+    end
+
+end
+
+function x = swap(x,i,j)
+    % Swap x(i) and x(j)
+    % Note: In practice, x xhould be passed by reference
+
+    val = x(i);
+    x(i) = x(j);
+    x(j) = val;
 
 end
 

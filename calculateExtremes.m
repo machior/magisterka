@@ -3,7 +3,7 @@ function [Xmaxes, Ymaxes, Xmins, Ymins] = calculateExtremes(X, Y, TStamp, EndPts
 
     [Xi, Yi] = fillInterpolation(X, Y, TStamp);
 
-    DrawPlot(Xi, 'X', -Yi, 'Y', EndPts);
+%     DrawPlot(Xi, 'X', -Yi, 'Y', EndPts);
 
     [Xmaxes, Ymaxes, Xmins, Ymins] = getExtremes(Xi, Yi);
 
