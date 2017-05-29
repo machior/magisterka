@@ -1,6 +1,3 @@
-
-
-
 %This function is provided as it is, without any warranty.
 %   Parameters:
 %   FileName: file name of the signature.
@@ -135,6 +132,39 @@ function ReadSignature(FileName,ShowSig)
 %         disp( strcat('average curvature per stroke: ', num2str( curvSum / (length(ups)+1) )) )
 
 %                 Number of strokes
+                % Construct blurring window.
+        windowWidth = int16(5);
+        halfWidth = windowWidth / 2
+        gaussFilter = gausswin(5)
+        gaussFilter = gaussFilter / sum(gaussFilter); % Normalize.
+
+        % Do the blur.
+        smoothedVector = conv(X, gaussFilter);
+        smoothedVector = smoothedVector(halfWidth:end-halfWidth+1);
+        a = ( smoothedVector(halfWidth) - X(1) ) / ( halfWidth - 1 );
+        b = X(1) - a;
+        for i=1:halfWidth
+            smoothedVector(i)=a*i+b;
+        end
+        a = ( X(end) - smoothedVector(end-halfWidth) ) / ( halfWidth );
+        b = X(end) - a*length(X);
+        for i=(length(smoothedVector)-halfWidth):length(smoothedVector)
+            smoothedVector(i)=a*i+b;
+        end
+
+        [locMaxes, locMaxesInd] = findpeaks(smoothedVector);
+        [locMins, locMinsInd] = findpeaks(-smoothedVector);
+        
+        [locExtr, locExtrInd] = getExtremes(X);
+        
+        % plot it.
+        figure;
+        plot(X);
+        hold on;
+        plot(smoothedVector);
+        plot(locExtrInd, locExtr, 'o');
+        
+        
 %                 Mean Ascender Height:
 %                 Mean Descender Depth:
 %                 Maximum height
@@ -142,10 +172,8 @@ function ReadSignature(FileName,ShowSig)
 %                 Maximum velocity
         disp( strcat('Maximum velocity: ', num2str( max(PenVelocity) )) )
 
-
 %                 Average velocity
         disp( strcat('Mean velocity: ', num2str( mean(PenVelocity) )) )
-
 
 %                 Standard Deviation of the Velocity
         disp( strcat('Standard Deviation of the Velocity: ', num2str( std(PenVelocity) )) )
@@ -164,13 +192,7 @@ function ReadSignature(FileName,ShowSig)
 
 %                 Handwriting Slant Using All Points
         disp( strcat('Mean Slant: ', num2str( mean(Slant) )) )
-
-%                 Handwriting Slant Using “Long Stroke” End-points:
-%                 Handwriting Slant Using All Points of “Long Strokes”
-%                 Handwriting Slant Through Regression of “Long Strokes”:
-%                 Handwriting Slant Using Cai and Liu Technique
-%                 Handwriting Slant Based on Vertical Overlap
-%                 Stroke Concavity
+        
 %                 Horizontal Velocity
         disp( strcat('Horizontal Velocity: ', num2str( mean(V_X) )) )
 
@@ -185,10 +207,6 @@ function ReadSignature(FileName,ShowSig)
 
 %                 Minimum Pen-Tip Pressure
         disp( strcat('Minimum Pen-Tip Pressure: ', num2str( min(Pressure) )) )
-
-%                 Degree of Parallelism
-%                 Baseline Consistency
-%                 Ascender-line Consistency
 
 %                 Circularity
         disp( strcat('Circularity: ', num2str(fullArea/hLength)) )
@@ -207,6 +225,35 @@ function ReadSignature(FileName,ShowSig)
         disp( strcat('Component Time Spacing: ', num2str( penUpTime )) )
 
     end          
+
+end
+
+function [locExtr, locExtrInd] = getExtremes(X)
+
+    % Construct blurring window.
+    windowWidth = int16(5);
+    halfWidth = windowWidth / 2
+    gaussFilter = gausswin(5)
+    gaussFilter = gaussFilter / sum(gaussFilter); % Normalize.
+
+    % Do the blur.
+    smoothedVector = conv(X, gaussFilter);
+    smoothedVector = smoothedVector(halfWidth:end-halfWidth+1);
+    a = ( smoothedVector(halfWidth) - X(1) ) / ( halfWidth - 1 );
+    b = X(1) - a;
+    for i=1:halfWidth
+        smoothedVector(i)=a*i+b;
+    end
+    a = ( X(end) - smoothedVector(end-halfWidth) ) / ( halfWidth );
+    b = X(end) - a*length(X);
+    for i=(length(smoothedVector)-halfWidth):length(smoothedVector)
+        smoothedVector(i)=a*i+b;
+    end
+
+    [locMaxes, locMaxesInd] = findpeaks(smoothedVector);
+    [locMins, locMinsInd] = findpeaks(-smoothedVector);
+    locExtr = [locMaxes; -locMins];
+    locExtrInd = [locMaxesInd; locMinsInd];
 
 end
 
