@@ -1,4 +1,4 @@
-function ExtractFeatures(getFeatures, drawPlots, writeData)
+function ExtractFeatures(FileName, getFeatures, drawPlots, writeData)
 
     if strcmp(FileName, 'all')
         
@@ -10,7 +10,7 @@ function ExtractFeatures(getFeatures, drawPlots, writeData)
         i=0;
         while i<num
             signatureNr = signatureNr + 1;
-            fileName = strcat('BlindSubCorpus/GENUINE/', userNrStr, '_g_', num2str(signatureNr), '.sig');
+            fileName = strcat('BlindSubCorpus/GENUINE/', userNrStr, '_g_', num2str(signatureNr), '.sig')
             if exist(fileName, 'file') ~= 2
                 signatureNr = 1;
                 userNr = userNr + 1;

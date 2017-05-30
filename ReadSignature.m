@@ -23,6 +23,8 @@ function ReadSignature(FileName, getFeatures, drawPlots, writeData)
     if getFeatures
         
         [Xmaxes, Ymaxes, Xmins, Ymins] = calculateExtremes(X, Y, TStamp, EndPts);
+        DrawPlot(X, 'X', -Y, 'Y', EndPts);
+        DrawPlot(Xmaxes, 'X', -Ymaxes, 'Y', EndPts);
         [Xmeans, Ymeans, fullArea] = calculateMeans(Xmins, Ymins, Xmaxes, Ymaxes);
         
 %                 center of signature

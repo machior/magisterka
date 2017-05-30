@@ -45,16 +45,19 @@ function [Xmaxes, Ymaxes, Xmins, Ymins] = getExtremes(Xi, Yi)
     Ymins = [];
     for i = min(Xi) : max(Xi)
 
-       indexes = Xi==i;
-       colY = Yi(indexes);
+        indexes = Xi==i;
+        colY = Yi(indexes);
 
-       maxx = max(colY);
-       minn = min(colY);
+        maxx = max(colY);
+        minn = min(colY);
+        if isempty(maxx)
+            continue
+        end
 
-       Xmaxes = [Xmaxes; i];
-       Ymaxes = [Ymaxes; maxx];
-       Xmins = [Xmins; i];
-       Ymins = [Ymins; minn];
+        Xmaxes = [Xmaxes; i];
+        Ymaxes = [Ymaxes; maxx];
+        Xmins = [Xmins; i];
+        Ymins = [Ymins; minn];
 
     end
 
