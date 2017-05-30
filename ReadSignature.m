@@ -201,40 +201,6 @@ function smoothedVector = smoothenPlot(X, windowSize)
         
 end
 
-function [locExtr, locExtrInd] = getExtremes(X)
-
-    [locMaxes, locMaxesInd] = findpeaks(X);
-    [locMins, locMinsInd] = findpeaks(-X);
-    locExtr = [locMaxes; -locMins];
-    locExtrInd = [locMaxesInd; locMinsInd];
-    
-    n = length(locExtr);
-    while (n > 0)
-        % Iterate through x
-        nnew = 0;
-        for i = 2:n
-            % Swap elements in wrong order
-            if (locExtr(i) < locExtr(i - 1))
-                locExtr = swap(locExtr,i,i - 1);
-                locExtrInd = swap(locExtrInd,i,i - 1);
-                nnew = i;
-            end
-        end
-        n = nnew;
-    end
-
-end
-
-function x = swap(x,i,j)
-    % Swap x(i) and x(j)
-    % Note: In practice, x xhould be passed by reference
-
-    val = x(i);
-    x(i) = x(j);
-    x(j) = val;
-
-end
-
 function avSpace = averageSpace(X, Y, TSteps)
 
     spacings = (TSteps > TSteps(1));
@@ -255,28 +221,6 @@ end
 function Z = pitZ(X, Y)
 
     Z = sqrt( diff(X).^2 + diff(Y).^2 );
-
-end
-
-
-function [Xmeans, Ymeans, fullArea] = calculateMeans(Xmins, Ymins, Xmaxes, Ymaxes)
-
-    Xmeans = [];
-    Ymeans = [];
-    fullArea = 0;
-    for i = 1 : length(Xmins)
-        if isnan(Xmins(i)) || isnan(Xmaxes(i))
-            continue
-        end
-
-        if ( Ymaxes(i) - Ymins(i) ) < inf && Ymaxes(i) ~= Ymins(i)
-           fullArea = fullArea + ( Ymaxes(i) - Ymins(i) );
-
-           Xmeans = [ Xmeans; Xmins(i) ];
-           Ymeans = [ Ymeans; (Ymaxes(i) + Ymins(i))/2 ];
-        end
-
-    end
 
 end
 
