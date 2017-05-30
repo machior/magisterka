@@ -2,7 +2,7 @@
 %   Parameters:
 %   FileName: file name of the signature.
 %   ShowSig : if set to non 0 value displays signature.
-function ReadSignature(FileName, getFeatures, drawPlots, writeData)
+function fullVector = ReadSignature(FileName, getFeatures, drawPlots, writeData, writeFileName)
 
     [X Y TStamp Pressure EndPts] = GetParameters(FileName);
 
@@ -23,44 +23,53 @@ function ReadSignature(FileName, getFeatures, drawPlots, writeData)
     if getFeatures
         
         [Xmaxes, Ymaxes, Xmins, Ymins] = calculateExtremes(X, Y, TStamp, EndPts);
-        DrawPlot(X, 'X', -Y, 'Y', EndPts);
-        DrawPlot(Xmaxes, 'X', -Ymaxes, 'Y', EndPts);
         [Xmeans, Ymeans, fullArea] = calculateMeans(Xmins, Ymins, Xmaxes, Ymaxes);
         
 %                 center of signature
         xCenter = mean(Xmeans);
         yCenter = mean(Ymeans);
+        fullVector = [xCenter; yCenter];
 
 %                 signature duration
         signatureDuration = TStamp(end);
+        fullVector = [fullVector; signatureDuration];
         
 %                 Component Time Spacing
         penUpTime = sum( TSteps( TSteps > TSteps(1) ) );
+        fullVector = [fullVector; penUpTime];
         
 %                 pen-down ratio
         penDownTime = TStamp(end)-penUpTime;
         penDownRatio = penDownTime/TStamp(end);
+        fullVector = [fullVector; penDownRatio];
 
 %                 horizontal length
         hLength = max(X)-min(X);
+        fullVector = [fullVector; hLength];
 
 %                 aspect ratio
         aRatio = hLength / (max(Y)-min(Y));
+        fullVector = [fullVector; aRatio];
 
 %                 pen-ups
         penUps = sum(TSteps > TSteps(1)) + 1;
+        fullVector = [fullVector; penUps];
 
 %                 cursiviness
         cursiviness = hLength / penUps;
+        fullVector = [fullVector; cursiviness];
 
 %                 top heaviness
         topHeav = mean(Y) / median(Y);
+        fullVector = [fullVector; topHeav];
 
 %                 Horizontal Dispersion
         horDisp = mean(X) / median(X);
+        fullVector = [fullVector; horDisp];
 
 %                 Curvature
         curvature = sum( pitZ(X, Y) ) / hLength;
+        fullVector = [fullVector; curvature];
         
         % Strokes
         smoothedX = smoothenPlot(X, 5);
@@ -69,59 +78,78 @@ function ReadSignature(FileName, getFeatures, drawPlots, writeData)
         [YlocExtr, YlocExtrInd] = getExtremes(smoothedY);
         hStrokes = length(XlocExtrInd) + 1;
         vStrokes = length(YlocExtrInd) + 1;
-%         xlswrite('pps.xls',smoothedX);
+        fullVector = [fullVector; hStrokes; vStrokes];
         
 %                 Maximum velocity
         maxVelocity = max(PenVelocity);
+        fullVector = [fullVector; maxVelocity];
 
 %                 Average velocity
         meanVelocity = mean(PenVelocity);
+        fullVector = [fullVector; maxVelocity];
 
 %                 Standard Deviation of the Velocity
         stdPenVelocity = std(PenVelocity);
+        fullVector = [fullVector; stdPenVelocity];
 
 %                 Average Absolute Acceleration
         meanPenAcceleration = mean(PenAcceleration);
+        fullVector = [fullVector; meanPenAcceleration];
 
 %                 Standard Deviation of the Absolute Acceleration
         stdPenAcceleration = std(PenAcceleration);
+        fullVector = [fullVector; stdPenAcceleration];
 
 %                 Maximum acceleration
         maxPenAcceleration = max(PenAcceleration);
+        fullVector = [fullVector; maxPenAcceleration];
 
 %                 Maximum deceleration
         minPenAcceleration = min(PenAcceleration);
+        fullVector = [fullVector; minPenAcceleration];
 
 %                 Handwriting Slant Using All Points
         meanSlant = mean(Slant);
+        fullVector = [fullVector; meanSlant];
         
-%                 Horizontal Velocity
+%                 Horizontal Velocity143.2911
+
         meanV_X = mean(V_X);
+        fullVector = [fullVector; meanV_X];
 
 %                 Mean Pen-Tip Pressure
         meanPressure = mean(Pressure);
+        fullVector = [fullVector; meanPressure];
 
 %                 Standard Deviation of Pen-Tip Pressure
         stdPressure = std(Pressure);
+        fullVector = [fullVector; stdPressure];
 
 %                 Maximum Pen-Tip Pressure
         maxPressure = max(Pressure);
+        fullVector = [fullVector; maxPressure];
 
 %                 Minimum Pen-Tip Pressure
         minPressure = min(Pressure);
+        fullVector = [fullVector; minPressure];
 
 %                 Circularity
         circularity = fullArea/hLength;
+        fullVector = [fullVector; circularity];
         
 %                 Area
         fullArea;
+        fullVector = [fullVector; fullArea];
     
 %                 Middle-Heaviness
         midHeaviness = fullArea/(hLength * (max(Y)-min(Y)));
+        fullVector = [fullVector; midHeaviness];
         
 %                 Component Physical Spacing
         avSpace = averageSpace(X, Y, TSteps);
+        fullVector = [fullVector; avSpace];
         
+%         csvwrite(writeFileName,fullVector);
     end
         
         
@@ -153,7 +181,7 @@ function ReadSignature(FileName, getFeatures, drawPlots, writeData)
         disp( strcat('number of pen-ups: ', num2str( penUps )) )
         disp( strcat('cursiviness: ', num2str( cursiviness )) )
         disp( strcat('top heaviness: ', num2str(topHeav)) )
-        disp( strcat('top heaviness: ', num2str(horDisp)) )
+        disp( strcat('Horizontal Dispersion: ', num2str(horDisp)) )
         disp( strcat('curvature: ', num2str(curvature)) )
         disp( strcat('Number of Horizontal Strokes: ', num2str( max(hStrokes) )) )
         disp( strcat('Number of Vertical Strokes: ', num2str( max(vStrokes) )) )
