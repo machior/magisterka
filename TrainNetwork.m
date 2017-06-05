@@ -1,9 +1,8 @@
-function ExtractFeatures(FileName, getFeatures, drawPlots, writeData)
+function TrainNetwork(FileName, getFeatures, drawPlots, writeData)
 
     if strcmp(FileName, 'all')
         
-%         filePath = 'BlindSubCorpus/GENUINE/';
-        filePath = 'VisualSubCorpus/FORGERY/';
+        filePath = 'ExtractedFeatures/VisualSubCorpus/FORGERY/';
         D = dir([filePath, '/*.sig']);
         num = length(D(not([D.isdir])));
         userNr=1;

@@ -2,8 +2,7 @@ function ExtractFeatures(FileName, getFeatures, drawPlots, writeData)
 
     if strcmp(FileName, 'all')
         
-%         filePath = 'BlindSubCorpus/GENUINE/';
-        filePath = 'VisualSubCorpus/FORGERY/';
+        filePath = 'BlindSubCorpus/GENUINE/';
         D = dir([filePath, '/*.sig']);
         num = length(D(not([D.isdir])));
         userNr=1;
