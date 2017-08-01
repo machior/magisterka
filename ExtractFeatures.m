@@ -3,7 +3,7 @@ function ExtractFeatures(FileName, getFeatures, drawPlots, writeData)
     if strcmp(FileName, 'all')
         
 %         filePath = 'BlindSubCorpus/GENUINE/';
-        filePath = 'VisualSubCorpus/GENUINE/SESSION2/';
+        filePath = 'VisualSubCorpus/VALIDATION/VALIDATION_GENUINE/';
         D = dir([filePath, '/*.sig']);
         num = length(D(not([D.isdir])));
         userNr=1;
@@ -13,7 +13,7 @@ function ExtractFeatures(FileName, getFeatures, drawPlots, writeData)
         csvFileContent = [];
         while i<num
             signatureNr = signatureNr + 1;
-            fileName = strcat(filePath, userNrStr, '_2_', num2str(signatureNr), '.sig');
+            fileName = strcat(filePath, userNrStr, '_1_', num2str(signatureNr), '.sig');
             disp(strcat(num2str(i+1), '/', num2str(num), ' ', fileName))
             if exist(fileName, 'file') ~= 2
                 signatureNr = 0;
